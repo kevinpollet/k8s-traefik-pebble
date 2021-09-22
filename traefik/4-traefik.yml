@@ -1,0 +1,88 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-ingress-controller
+  namespace: traefik
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik
+  namespace: traefik
+
+spec:
+  selector:
+    matchLabels:
+      app: traefik
+
+  template:
+    metadata:
+      labels:
+        app: traefik
+
+    spec:
+      serviceAccountName: traefik-ingress-controller
+      containers:
+        - name: traefik
+          image: traefik
+          env:
+            - name: LEGO_CA_CERTIFICATES
+              value: /pebble/ca.crt
+
+          args:
+            - --api.insecure
+            - --log.level=debug
+            - --entrypoints.http.address=:80
+            - --entrypoints.https.address=:443
+            - --providers.kubernetesIngress
+
+            - --certificatesresolvers.pebble.acme.email=test@example.com
+            - --certificatesresolvers.pebble.acme.storage=acme.json
+            - --certificatesresolvers.pebble.acme.caserver=https://pebble.pebble.svc:14000/dir
+            - --certificatesresolvers.pebble.acme.tlschallenge=true
+
+          ports:
+            - name: http
+              containerPort: 80
+
+            - name: https
+              containerPort: 443
+
+            - name: admin
+              containerPort: 8080
+
+          volumeMounts:
+            - mountPath: /pebble
+              name: pebble-ca
+
+      volumes:
+        - name: pebble-ca
+          secret:
+            secretName: pebble-ca
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik
+  namespace: traefik
+
+spec:
+  type: LoadBalancer
+  selector:
+    app: traefik
+
+  ports:
+    - port: 80
+      targetPort: http
+      name: http
+
+    - port: 443
+      targetPort: https
+      name: https
+
+    - port: 8080
+      targetPort: admin
+      name: admin

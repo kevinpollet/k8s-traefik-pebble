@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+  namespace: pebble
+
+data:
+  config.json: |
+    {
+      "pebble": {
+        "listenAddress": "0.0.0.0:14000",
+        "managementListenAddress": "0.0.0.0:15000",
+        "certificate": "/certs/tls.crt",
+        "privateKey": "/certs/tls.key",
+        "httpPort": 80,
+        "tlsPort": 443,
+        "ocspResponderURL": "",
+        "externalAccountBindingRequired": false
+      }
+    }
