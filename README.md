@@ -82,31 +82,29 @@ X-Real-Ip: 10.42.0.0
 * Closing connection 0 
 ```
 
-# Persist the AcmeStorage
+## Persisting the ACME certificates
 
-One may want to keep [acmeStorage](https://doc.traefik.io/traefik/v2.5/https/acme/#storage) already stored to avoid re-asking certificates at each Traefik deployment update.
+The [ACME storage](https://doc.traefik.io/traefik/v2.5/https/acme/#storage) stores the certificates to avoid re-asking them at each Traefik deployment update.
 
-To do so, Kubernetes provides [Persistent Volume Claims](https://kubernetes.io/docs/concepts/storage/persistent-volumes/),
-the `local-path` storage class is used in this example as it uses k3d as kubernetes cluster,
-please check the available storage classes in your cluster.
+In order to persist it, Kubernetes provides [Persistent Volume Claims](https://kubernetes.io/docs/concepts/storage/persistent-volumes/).
+The k3d `local-path` storage class is used in this example, please check the available storage classes in your cluster.
 
-To test that Traefik does not need to ask the certificate anymore,
-one may start the cluster, and check the Traefik logs:
+To test that Traefik does not need to ask the certificate anymore, one may start the cluster, and check the Traefik logs:
 
 ```shell
-kubectl -n traefik logs deployment/traefik | grep ACME
+$ kubectl -n traefik logs deployment/traefik | grep ACME
 ```
+
 The following message should appear:
 
 ```shell
-Domains [\"whoami.localhost\"] need ACME certificates generation for domains \"whoami.localhost\"."
+$ Domains [\"whoami.localhost\"] need ACME certificates generation for domains \"whoami.localhost\"."
 ```
 
-Then it will load the certificate.
 Now, the following command could be used to force a deployment update:
 
 ```shell
-kubectl -n traefik rollout restart deployment/traefik
+$ kubectl -n traefik rollout restart deployment/traefik
 ```
 
 Now, let's check the Traefik logs:
@@ -116,5 +114,4 @@ $ kubectl -n traefik logs deployment/traefik | grep ACME
 time="2021-09-23T08:45:09Z" level=debug msg="No ACME certificate generation required for domains [\"whoami.localhost\"]." rule="Host(`whoami.localhost`) && PathPrefix(`/`)" providerName=pebble.acme routerName=whoami-default-whoami-localhost@kubernetes
 ```
 
-Et voila!
-Traefik does not need to re-ask the certificate anymore. 
+Et voila, Traefik does not need to re-ask the certificates anymore at each deployment. 
