@@ -81,3 +81,40 @@ X-Real-Ip: 10.42.0.0
 * Connection #0 to host whoami.localhost left intact
 * Closing connection 0 
 ```
+
+# Persist the AcmeStorage
+
+One may want to keep [acmeStorage](https://doc.traefik.io/traefik/v2.5/https/acme/#storage) already stored to avoid re-asking certificates at each Traefik deployment update.
+
+To do so, Kubernetes provides [Persistent Volume Claims](https://kubernetes.io/docs/concepts/storage/persistent-volumes/),
+the `local-path` storage class is used in this example as it uses k3d as kubernetes cluster,
+please check the available storage classes in your cluster.
+
+To test that Traefik does not need to ask the certificate anymore,
+one may start the cluster, and check the Traefik logs:
+
+```shell
+kubectl -n traefik logs deployment/traefik | grep ACME
+```
+The following message should appear:
+
+```shell
+Domains [\"whoami.localhost\"] need ACME certificates generation for domains \"whoami.localhost\"."
+```
+
+Then it will load the certificate.
+Now, the following command could be used to force a deployment update:
+
+```shell
+kubectl -n traefik rollout restart deployment/traefik
+```
+
+Now, let's check the Traefik logs:
+
+```shell
+$ kubectl -n traefik logs deployment/traefik | grep ACME
+time="2021-09-23T08:45:09Z" level=debug msg="No ACME certificate generation required for domains [\"whoami.localhost\"]." rule="Host(`whoami.localhost`) && PathPrefix(`/`)" providerName=pebble.acme routerName=whoami-default-whoami-localhost@kubernetes
+```
+
+Et voila!
+Traefik does not need to re-ask the certificate anymore. 
