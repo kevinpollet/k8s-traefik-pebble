@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: acme-storage
+  namespace: traefik
+spec:
+  accessModes:
+    - ReadWriteOnce
+  # Replace the storageClassName with the storage you use in your Kubernetes cluster.
+  storageClassName: local-path
+  resources:
+    requests:
+      # Replace by an appropriate size.
+      storage: 10Mi

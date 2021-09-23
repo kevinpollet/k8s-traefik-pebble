@@ -26,7 +26,7 @@ spec:
       serviceAccountName: traefik-ingress-controller
       containers:
         - name: traefik
-          image: traefik
+          image: traefik:v2.5.3
           env:
             - name: LEGO_CA_CERTIFICATES
               value: /pebble/ca.crt
@@ -39,7 +39,7 @@ spec:
             - --providers.kubernetesIngress
 
             - --certificatesresolvers.pebble.acme.email=test@example.com
-            - --certificatesresolvers.pebble.acme.storage=acme.json
+            - --certificatesresolvers.pebble.acme.storage=/letsencrypt/acme.json
             - --certificatesresolvers.pebble.acme.caserver=https://pebble.pebble.svc:14000/dir
             - --certificatesresolvers.pebble.acme.tlschallenge=true
 
@@ -57,11 +57,17 @@ spec:
             - mountPath: /pebble
               name: pebble-ca
 
+            - mountPath: /letsencrypt
+              name: acme-storage
+
       volumes:
         - name: pebble-ca
           secret:
             secretName: pebble-ca
 
+        - name: acme-storage
+          persistentVolumeClaim:
+            claimName: acme-storage
 ---
 apiVersion: v1
 kind: Service
