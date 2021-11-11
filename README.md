@@ -1,4 +1,4 @@
-# traefik-pebble-k8s
+# k8s-traefik-pebble
 
 This repository shows how to configure and use [pebble](https://github.com/letsencrypt/pebble#readme) as a [Traefik](https://github.com/traefik/traefik#readme) certificate resolver in Kubernetes.
 The configured resolver is used to obtain an ACME certificate for the domain `whoami.localhost` which resolves to a whoami application exposed through a [Kubernetes Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/). 
